@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Entrer le code</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;display:flex;
+    min-height:100vh;align-items:center;justify-content:center;background:#0f0f12;color:#eee;margin:0}
+  .card{width:360px;padding:28px;border-radius:12px;background:linear-gradient(180deg,#121216,#0b0b0d);
+    box-shadow:0 10px 30px rgba(0,0,0,.6);text-align:center}
+  input{width:100%;padding:10px;border-radius:8px;border:1px solid #222;background:#0b0b0d;color:#fff;margin:10px 0}
+  button{width:100%;padding:10px;border-radius:8px;border:0;background:#1f8cff;color:#fff;font-weight:600;cursor:pointer}
+  .secret{margin-top:14px;display:none}
+  .hint{font-size:13px;color:#9aa}
+  a.reveal{color:#ade1ff;word-break:break-all}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>🔒 Entrer le code</h2>
+    <div class="hint">Tape le code trouvé dans l'image (ou dans la bio).</div>
+    <input id="code" placeholder="Ton code ici" autocomplete="off" />
+    <button id="submit">Valider</button>
+    <div id="message" class="hint"></div>
+    <div id="secret" class="secret">
+      <p>✅ Code OK — voici ton lien :</p>
+      <a id="secretLink" class="reveal" href="#" target="_blank" rel="noopener">Accès secret</a>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:#666">Site prêt pour Netlify — voir README pour déploy.</div>
+  </div>
+
+<script>
+document.getElementById('submit').addEventListener('click', async ()=>{
+  const input = document.getElementById('code').value.trim();
+  const msg = document.getElementById('message');
+  if(!input){ msg.textContent = "Entre le code."; return; }
+  msg.textContent = "Vérification…";
+  try {
+    const res = await fetch('/.netlify/functions/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: input })
+    });
+    const j = await res.json();
+    if(j.ok){
+      msg.textContent = "";
+      document.getElementById('secretLink').href = j.url;
+      document.getElementById('secret').style.display = 'block';
+    } else {
+      msg.textContent = "Code invalide. Essaie encore.";
+      document.getElementById('secret').style.display = 'none';
+    }
+  } catch(e){
+    msg.textContent = "Erreur réseau — réessaie.";
+  }
+});
+</script>
+</body>
+</html>
